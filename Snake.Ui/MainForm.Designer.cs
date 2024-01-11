@@ -42,7 +42,7 @@
             mainImage.BackColor = Color.White;
             mainImage.Location = new Point(12, 12);
             mainImage.Name = "mainImage";
-            mainImage.Size = new Size(572, 572);
+            mainImage.Size = new Size(500, 500);
             mainImage.TabIndex = 0;
             mainImage.TabStop = false;
             mainImage.Paint += mainImage_Paint;

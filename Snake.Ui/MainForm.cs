@@ -26,10 +26,9 @@ namespace Snake.Ui
                 for (int y = 0; y < game.BoardHeight; y++)
                 {
                     var from = new Point(x * pointSizeX, y * pointSizeY);
-                    var to = new Point(from.X + pointSizeX - 1, from.Y + pointSizeY - 1);
 
                     var brush = ToBrush(game[x, y]);
-                    e.Graphics.FillRectangle(brush, from.X, from.Y, to.X, to.Y);
+                    e.Graphics.FillRectangle(brush, from.X, from.Y, pointSizeX - 1, pointSizeY - 1);
                 }
             }
         }
