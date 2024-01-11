@@ -8,8 +8,6 @@ namespace Snake.Game
 
         public const int MinimumGameSize = 5;
 
-        private GameItem[,]? board;
-
         private readonly List<Point> snake = new();
 
         private readonly IRandomGenerator random;
@@ -35,12 +33,26 @@ namespace Snake.Game
             this.random = randomGenerator;
         }
 
-        public GameItem this[int x, int y] => this.board[x, y];
+        public GameItem this[int x, int y]
+        {
+            get
+            {
+                if ((food.X == x) && (food.Y == y))
+                {
+                    return GameItem.Food;
+                } else if (snake.Contains(new Point(x, y)))
+                {
+                    return GameItem.Body;
+                }
+
+                return GameItem.None;
+            }
+        }
 
         public Direction Direction { get; set; } = Direction.Up;
 
-        public int BoardWidth => this.board.GetLength(0);
-        public int BoardHeight => this.board.GetLength(1);
+        public int BoardWidth { get; private set; }
+        public int BoardHeight { get; private set; }
 
         public void Tick()
         {
@@ -74,7 +86,7 @@ namespace Snake.Game
                 nextPoint.Y < 0 || 
                 nextPoint.X >= this.BoardWidth ||
                 nextPoint.Y >= this.BoardHeight ||
-                board[nextPoint.X, nextPoint.Y] == GameItem.Body)
+                this[nextPoint.X, nextPoint.Y] == GameItem.Body)
             {
                 this.OnCollision?.Invoke();
                 return;
@@ -82,7 +94,7 @@ namespace Snake.Game
 
             snake.Insert(0, nextPoint);
 
-            if (board[nextPoint.X, nextPoint.Y] == GameItem.Food)
+            if (this[nextPoint.X, nextPoint.Y] == GameItem.Food)
             {
                 food = RandomPoint();
                 this.OnEatFood?.Invoke();
@@ -93,7 +105,7 @@ namespace Snake.Game
                 snake.RemoveAt(snake.Count - 1);
             }
 
-            DrawBoard();
+            this.OnUpdateRequired?.Invoke();
         }
 
         public void InitializeGame(int width, int height)
@@ -103,7 +115,8 @@ namespace Snake.Game
                 throw new ArgumentException("The board size is too small. (5x5 minimum)");
             }
 
-            board = new GameItem[width, height];
+            this.BoardWidth = width;
+            this.BoardHeight = height;
 
             Direction = Direction.Up;
             Score = 0;
@@ -117,30 +130,6 @@ namespace Snake.Game
             this.snake.Add(new Point(snakeHead.X, snakeHead.Y + 1));
 
             food = RandomPoint();
-
-            DrawBoard();
-        }
-
-        private void DrawBoard()
-        {
-            // Clear the board
-            for (int x = 0; x < this.BoardWidth; x++)
-            {
-                for (int y = 0; y < this.BoardHeight; y++)
-                {
-                    this.board[x, y] = GameItem.None;
-                }
-            }
-
-            // Place the snake
-            for (int i = 0; i < this.snake.Count; i++)
-            {
-                var point = this.snake[i];
-                this.board[point.X, point.Y] = i == 0 ? GameItem.Head : GameItem.Body;
-            }
-
-            // Place the food
-            board[food.X, food.Y] = GameItem.Food;
 
             this.OnUpdateRequired?.Invoke();
         }
@@ -165,7 +154,7 @@ namespace Snake.Game
 
         private bool IsEmptySpace(int x, int y)
         {
-            return this.board[x, y] == GameItem.None;
+            return this[x, y] == GameItem.None;
         }
     }
 }
